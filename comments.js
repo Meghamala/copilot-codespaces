@@ -1,22 +1,24 @@
-// create web server
-// create a web server that listens on port 3000 and serves the comments.js file to the client. Use the createServer method from the http module. The fs module will be needed to read the comments.js file.
+// Create web server
 
-const http = require('http');
+const express = require('express');
+const bodyParser = require('body-parser');
 const fs = require('fs');
 
-const server = http.createServer((req, res) => {
-  fs.readFile('./comments.js', (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-    } else {
-      res.writeHead(200, { 'Content-Type': 'text/javascript' });
-      res.end(data);
-    }
-  });
+const app = express();
+app.use(bodyParser.json());
+
+app.get('/comments', (req, res) => {
+    const comments = fs.readFileSync('./comments.json', 'utf-8');
+    res.send(comments);
 });
 
-server.listen(3000, () => {
-  console.log('Server is running...');
+app.post('/comments', (req, res) => {
+    const comments = JSON.parse(fs.readFileSync('./comments.json', 'utf-8'));
+    comments.push(req.body);
+    fs.writeFileSync('./comments.json', JSON.stringify(comments));
+    res.send(comments);
 });
 
+app.listen(3000, () => {
+    console.log('Server is listening on port 3000');
+});
